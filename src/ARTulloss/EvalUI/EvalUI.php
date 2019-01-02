@@ -3,13 +3,14 @@ declare(strict_types=1);
 
 namespace ARTulloss\EvalUI;
 
-use jojoe77777\FormAPI\CustomForm;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
+
+use jojoe77777\FormAPI\CustomForm;
 
 /**
  * Class EvalUI
@@ -23,6 +24,10 @@ class EvalUI extends PluginBase implements Listener
     }
 }
 
+/**
+ * Class EvalCommand
+ * @package ARTulloss\EvalUI
+ */
 class EvalCommand extends Command
 {
     public function execute(CommandSender $sender, string $commandLabel, array $args)
@@ -31,6 +36,10 @@ class EvalCommand extends Command
 
         if($sender instanceof Player) {
 
+            /**
+             * @param Player $sender
+             * @param $data
+             */
             $closure = function (Player $sender, $data) use ($server): void
             {
                 if(isset($data)) {
