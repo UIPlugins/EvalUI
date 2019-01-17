@@ -1,6 +1,10 @@
 name: EvalUI
 main: ARTulloss\EvalUI\EvalUI
 api: [3.2.0]
-version: 1.0.0
+version: 1.0.1
 author: ARTulloss
 description: We needed this too
+commands:
+  permissions:
+    eval: Allow the user to evaluate commands
+    default: true # Change this to false if production

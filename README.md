@@ -3,13 +3,20 @@ PocketMine-MP plugin which allows you to execute arbitrary code using forms. Use
 
 # How to use?
 
-1. Run command /eval
+1. Run the command /eval
 2. Enter in code you want to execute
 
-If you're idot, this might crash the server, however I've put in a try catch to try to stop it from crashing the server.
-The only way I've been able to cause crash so far is using undefined variables. The only variables defined are $server and $sender
-which both should work exactly as expected.
+Note: When executing via the console you need to add the code as arguments.
 
-Bonus
+# Predefined variables
 
-This also works in the console ;)
+$this is this plugin, EvalUI.
+$s is the sender, you.
+$srv is the server.
+
+The short variables are intentional; forms limit the amount of characters you're able to type.
+
+# Note
+
+This plugin *should* not crash your server due to typos made by the user.
+If you find a way to crash the server that is purely a user input error, feel free to report it and we'll add in another catch to stop the crash.

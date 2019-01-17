@@ -19,61 +19,79 @@ use jojoe77777\FormAPI\CustomForm;
  */
 class EvalUI extends PluginBase implements Listener
 {
-    public function onEnable(): void
-    {
-        $class = new class('eval', $this) extends PluginCommand
-        {
-            public function __construct(string $name, Plugin $owner)
-            {
-                parent::__construct($name, $owner);
-                $this->setDescription('Eval as a UI!');
-            }
 
-            public function execute(CommandSender $sender, string $commandLabel, array $args)
-            {
-                $server = $sender->getServer();
+	public const PERMISSION = 'eval';
 
-                if ($sender instanceof Player) {
+	public function onEnable(): void
+	{
+		$this->saveDefaultConfig();
+		$class = new class('eval', $this) extends PluginCommand
+		{
+			public function __construct(string $name, Plugin $owner)
+			{
+				parent::__construct($name, $owner);
+				$this->setDescription('Eval as a UI!');
+			}
 
-                    /**
-                     * @param Player $sender
-                     * @param $data
-                     */
-                    $closure = function (Player $sender, $data) use ($server): void {
-                        if (isset($data)) {
-                            try {
-                                $this->getPlugin()->evaluate($data[0]);
-                            } catch (\ParseError $exception) {
-                                $sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
-                            }
-                        }
-                    };
+			public function execute(CommandSender $sender, string $commandLabel, array $args)
+			{
+				if($sender->hasPermission(EvalUI::PERMISSION)) {
 
-                    $form = new CustomForm($closure);
+					if ($sender instanceof Player) {
 
-                    $form->addInput('What do you want to eval?', '$sender = You, $server = Server, Enjoy!');
+						/**
+						 * @param Player $sender
+						 * @param $data
+						 */
+						$closure = function (Player $sender, $data): void {
+							if (isset($data))
+								$this->getPlugin()->evaluate($sender, $data[0]);
+						};
 
-                    $sender->sendForm($form);
+						$form = new CustomForm($closure);
+
+						$form->addInput('What do you want to eval?', '$s = You, $srv = Server, Enjoy!');
+
+						$sender->sendForm($form);
 
 
-                } else {
-                    try {
-                        $this->getPlugin()->evaluate(implode(" ", $args));
-                    } catch (\ParseError $exception) {
-                        $sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
-                    }
-                }
-            }
-        };
+					} else {
+						$this->getPlugin()->evaluate($sender, implode(" ", $args));
+					}
+					
+				} else
+					$sender->sendMessage('%commands.generic.permission');
+			}
+		};
 
-        $this->getServer()->getCommandMap()->register('EvalUI', $class);
-    }
+		$this->getServer()->getCommandMap()->register('EvalUI', $class);
+	}
 
-    /**
-     * @param string $eval
-     */
-    public function evaluate(string $eval): void
-    {
-        eval($eval);
-    }
+	/**
+	 * @param CommandSender $s
+	 * @param string $eval
+	 */
+	public function evaluate(CommandSender $s, string $eval): void
+	{
+		try { // Don't crash the server!
+			$svr = $this->getServer(); // Forms have limited characters, so short variables are useful
+			eval($eval);
+		} catch (\ParseError $exception) {
+			$this->oops($s, $exception);
+		} catch (\UndefinedConstantException $exception) {
+			$this->oops($s, $exception);
+		} catch (\UndefinedVariableException $exception) {
+			$this->oops($s, $exception);
+		}
+	}
+
+	/**
+	 * @param CommandSender $sender
+	 * @param \Throwable $exception
+	 */
+	public function oops(CommandSender $sender, \Throwable $exception): void
+	{
+		$sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
+	}
+
 }
