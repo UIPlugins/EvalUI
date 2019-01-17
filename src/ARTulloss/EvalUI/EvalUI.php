@@ -15,66 +15,65 @@ use jojoe77777\FormAPI\CustomForm;
 
 /**
  * Class EvalUI
- * @package ARTulloss\PvPUI
+ * @package ARTulloss\EvalUI
  */
 class EvalUI extends PluginBase implements Listener
 {
     public function onEnable(): void
     {
-    	$class = new class('eval', $this) extends PluginCommand
-	    {
-	    	public function __construct(string $name, Plugin $owner)
-		    {
-			    parent::__construct($name, $owner);
-			    $this->setDescription('Eval as a UI!');
-		    }
+        $class = new class('eval', $this) extends PluginCommand
+        {
+            public function __construct(string $name, Plugin $owner)
+            {
+                parent::__construct($name, $owner);
+                $this->setDescription('Eval as a UI!');
+            }
 
-		    public function execute(CommandSender $sender, string $commandLabel, array $args)
-		    {
-			    $server = $sender->getServer();
+            public function execute(CommandSender $sender, string $commandLabel, array $args)
+            {
+                $server = $sender->getServer();
 
-			    if($sender instanceof Player) {
+                if ($sender instanceof Player) {
 
-				    /**
-				     * @param Player $sender
-				     * @param $data
-				     */
-				    $closure = function (Player $sender, $data) use ($server): void
-				    {
-					    if(isset($data)) {
-						    try {
-							    $this->getPlugin()->evaluate($data[0]);
-						    } catch (\ParseError $exception) {
-							    $sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
-						    }
-					    }
-				    };
+                    /**
+                     * @param Player $sender
+                     * @param $data
+                     */
+                    $closure = function (Player $sender, $data) use ($server): void {
+                        if (isset($data)) {
+                            try {
+                                $this->getPlugin()->evaluate($data[0]);
+                            } catch (\ParseError $exception) {
+                                $sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
+                            }
+                        }
+                    };
 
-				    $form = new CustomForm($closure);
+                    $form = new CustomForm($closure);
 
-				    $form->addInput('What do you want to eval?', '$sender = You, $server = Server, Enjoy!');
+                    $form->addInput('What do you want to eval?', '$sender = You, $server = Server, Enjoy!');
 
-				    $sender->sendForm($form);
+                    $sender->sendForm($form);
 
 
-			    } else {
-				    try {
-					    $this->getPlugin()->evaluate(implode(" ", $args));
-				    } catch (\ParseError $exception) {
-					    $sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
-				    }
-			    }
-		    }
-	    };
+                } else {
+                    try {
+                        $this->getPlugin()->evaluate(implode(" ", $args));
+                    } catch (\ParseError $exception) {
+                        $sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
+                    }
+                }
+            }
+        };
 
         $this->getServer()->getCommandMap()->register('EvalUI', $class);
     }
 
-	/**
-	 * @param string $eval
-	 */
+    /**
+     * @param string $eval
+     */
     public function evaluate(string $eval): void
     {
-	    eval($eval);
+        eval($eval);
     }
 }
