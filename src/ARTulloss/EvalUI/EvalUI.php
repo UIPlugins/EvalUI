@@ -19,79 +19,69 @@ use jojoe77777\FormAPI\CustomForm;
  */
 class EvalUI extends PluginBase implements Listener
 {
+    public const PERMISSION = 'eval';
 
-	public const PERMISSION = 'eval';
+    public function onEnable(): void
+    {
+        $this->saveDefaultConfig();
+        $class = new class('eval', $this) extends PluginCommand
+        {
+            public function __construct(string $name, Plugin $owner)
+            {
+                parent::__construct($name, $owner);
+                $this->setDescription('Eval as a UI!');
+            }
 
-	public function onEnable(): void
-	{
-		$this->saveDefaultConfig();
-		$class = new class('eval', $this) extends PluginCommand
-		{
-			public function __construct(string $name, Plugin $owner)
-			{
-				parent::__construct($name, $owner);
-				$this->setDescription('Eval as a UI!');
-			}
+            public function execute(CommandSender $sender, string $commandLabel, array $args)
+            {
+                if ($sender->hasPermission(EvalUI::PERMISSION)) {
+                    if ($sender instanceof Player) {
+                        /**
+                         * @param Player $sender
+                         * @param        $data
+                         */
+                        $closure = function (Player $sender, $data): void {
+                            if (isset($data))
+                                $this->getPlugin()->evaluate($sender, $data[0]);
+                        };
+                        $form = new CustomForm($closure);
+                        $form->addInput('What do you want to eval?', '$s = You, $srv = Server, Enjoy!');
+                        $sender->sendForm($form);
+                    } else {
+                        $this->getPlugin()->evaluate($sender, implode(" ", $args));
+                    }
 
-			public function execute(CommandSender $sender, string $commandLabel, array $args)
-			{
-				if($sender->hasPermission(EvalUI::PERMISSION)) {
+                } else
+                    $sender->sendMessage('%commands.generic.permission');
+            }
+        };
+        $this->getServer()->getCommandMap()->register('EvalUI', $class);
+    }
 
-					if ($sender instanceof Player) {
+    /**
+     * @param CommandSender $s
+     * @param string        $eval
+     */
+    public function evaluate(CommandSender $s, string $eval): void
+    {
+        try { // Don't crash the server!
+            $svr = $this->getServer(); // Forms have limited characters, so short variables are useful
+            eval($eval);
+        } catch (\ParseError $exception) {
+            $this->oops($s, $exception);
+        } catch (\UndefinedConstantException $exception) {
+            $this->oops($s, $exception);
+        } catch (\UndefinedVariableException $exception) {
+            $this->oops($s, $exception);
+        }
+    }
 
-						/**
-						 * @param Player $sender
-						 * @param $data
-						 */
-						$closure = function (Player $sender, $data): void {
-							if (isset($data))
-								$this->getPlugin()->evaluate($sender, $data[0]);
-						};
-
-						$form = new CustomForm($closure);
-
-						$form->addInput('What do you want to eval?', '$s = You, $srv = Server, Enjoy!');
-
-						$sender->sendForm($form);
-
-
-					} else {
-						$this->getPlugin()->evaluate($sender, implode(" ", $args));
-					}
-					
-				} else
-					$sender->sendMessage('%commands.generic.permission');
-			}
-		};
-
-		$this->getServer()->getCommandMap()->register('EvalUI', $class);
-	}
-
-	/**
-	 * @param CommandSender $s
-	 * @param string $eval
-	 */
-	public function evaluate(CommandSender $s, string $eval): void
-	{
-		try { // Don't crash the server!
-			$svr = $this->getServer(); // Forms have limited characters, so short variables are useful
-			eval($eval);
-		} catch (\ParseError $exception) {
-			$this->oops($s, $exception);
-		} catch (\UndefinedConstantException $exception) {
-			$this->oops($s, $exception);
-		} catch (\UndefinedVariableException $exception) {
-			$this->oops($s, $exception);
-		}
-	}
-
-	/**
-	 * @param CommandSender $sender
-	 * @param \Throwable $exception
-	 */
-	public function oops(CommandSender $sender, \Throwable $exception): void
-	{
-		$sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
-	}
-
+    /**
+     * @param CommandSender $sender
+     * @param \Throwable    $exception
+     */
+    public function oops(CommandSender $sender, \Throwable $exception): void
+    {
+        $sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
+    }
 }
