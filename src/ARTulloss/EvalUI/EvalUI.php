@@ -5,7 +5,6 @@ namespace ARTulloss\EvalUI;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
-use pocketmine\event\Listener;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
@@ -17,14 +16,12 @@ use jojoe77777\FormAPI\CustomForm;
  * Class EvalUI
  * @package ARTulloss\EvalUI
  */
-class EvalUI extends PluginBase implements Listener
+class EvalUI extends PluginBase
 {
-
 	public const PERMISSION = 'eval';
 
 	public function onEnable(): void
 	{
-		$this->saveDefaultConfig();
 		$class = new class('eval', $this) extends PluginCommand
 		{
 			public function __construct(string $name, Plugin $owner)
@@ -39,10 +36,6 @@ class EvalUI extends PluginBase implements Listener
 
 					if ($sender instanceof Player) {
 
-						/**
-						 * @param Player $sender
-						 * @param $data
-						 */
 						$closure = function (Player $sender, $data): void {
 							if (isset($data))
 								$this->getPlugin()->evaluate($sender, $data[0]);
@@ -54,16 +47,12 @@ class EvalUI extends PluginBase implements Listener
 
 						$sender->sendForm($form);
 
-
-					} else {
+					} else
 						$this->getPlugin()->evaluate($sender, implode(" ", $args));
-					}
-					
 				} else
 					$sender->sendMessage('%commands.generic.permission');
 			}
 		};
-
 		$this->getServer()->getCommandMap()->register('EvalUI', $class);
 	}
 
@@ -76,11 +65,7 @@ class EvalUI extends PluginBase implements Listener
 		try { // Don't crash the server!
 			$svr = $this->getServer(); // Forms have limited characters, so short variables are useful
 			eval($eval);
-		} catch (\ParseError $exception) {
-			$this->oops($s, $exception);
-		} catch (\UndefinedConstantException $exception) {
-			$this->oops($s, $exception);
-		} catch (\UndefinedVariableException $exception) {
+		} catch (\Throwable $exception) {
 			$this->oops($s, $exception);
 		}
 	}
@@ -91,7 +76,7 @@ class EvalUI extends PluginBase implements Listener
 	 */
 	public function oops(CommandSender $sender, \Throwable $exception): void
 	{
-		$sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! . Error: ' . $exception->getMessage());
+		$sender->sendMessage(TextFormat::RED . 'You made an oopsie but we caught it! ' . 'Error: ' . $exception->getMessage());
 	}
 
 }

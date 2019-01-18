@@ -15,8 +15,3 @@ $s is the sender, you.
 $srv is the server.
 
 The short variables are intentional; forms limit the amount of characters you're able to type.
-
-# Note
-
-This plugin *should* not crash your server due to typos made by the user.
-If you find a way to crash the server that is purely a user input error, feel free to report it and we'll add in another catch to stop the crash.
